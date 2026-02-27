@@ -3,8 +3,10 @@ import { FileRoutes } from "@solidjs/start/router";
 import "./app.css";
 
 export default function App() {
+  const base = import.meta.env.BASE_URL.replace(/\/$/, "");
+
   return (
-    <Router base="/rester-dev">
+    <Router base={base}>
       <FileRoutes />
     </Router>
   );

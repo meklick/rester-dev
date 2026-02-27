@@ -22,11 +22,11 @@ pnpm dev
 開発サーバー起動後、以下のURLでアクセスしてください:
 
 ```
-http://localhost:3000/rester-dev/
+http://localhost:3000/
 ```
 
-> Note: ルーターのベースパスが `/rester-dev` に設定されているため、
-> ルートパス `/` ではなく `/rester-dev/` でアクセスしてください。
+> Note: GitHub Pages 用のベースパスはビルド時に自動判定されます。
+> ローカル開発では `/` がベースパスです。
 
 ---
 
