@@ -40,12 +40,13 @@ jobs:
 
       # Fix absolute asset paths for GitHub Pages subdirectory deployment.
       # Vinxi hardcodes /_build/ as the client router base; we rewrite it here.
+      # Note: window.manifest inside <script> also contains /_build/ paths,
+      # so we replace ALL occurrences in the HTML file, not just HTML attributes.
       - name: Fix asset paths for GitHub Pages
         run: |
           REPO_NAME="rester-dev"
           HTML="app/.output/public/index.html"
-          sed -i "s|src=\"/_build/|src=\"/${REPO_NAME}/_build/|g" "$HTML"
-          sed -i "s|href=\"/_build/|href=\"/${REPO_NAME}/_build/|g" "$HTML"
+          sed -i "s|/_build/|/${REPO_NAME}/_build/|g" "$HTML"
           sed -i "s|href=\"/favicon.ico\"|href=\"/${REPO_NAME}/favicon.ico\"|g" "$HTML"
 
       - name: Setup Pages
