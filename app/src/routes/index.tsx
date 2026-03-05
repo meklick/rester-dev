@@ -1,49 +1,78 @@
-import { createSignal, onMount, Show } from "solid-js";
+import { createSignal } from "solid-js";
 import type { Component } from "solid-js";
+import { isServer } from "solid-js/web";
 import poems from "~/data/poems.json";
 
 type Poem = (typeof poems)[number];
 
-function shuffle(arr: number[]): number[] {
+function mulberry32(seed: number): () => number {
+  let t = seed >>> 0;
+  return () => {
+    t += 0x6d2b79f5;
+    let r = Math.imul(t ^ (t >>> 15), t | 1);
+    r ^= r + Math.imul(r ^ (r >>> 7), r | 61);
+    return ((r ^ (r >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+function seedToUint32(seed: string): number {
+  let h = 2166136261;
+  for (let i = 0; i < seed.length; i++) {
+    h ^= seed.charCodeAt(i);
+    h = Math.imul(h, 16777619);
+  }
+  return h >>> 0;
+}
+
+function shuffleWithSeed(arr: number[], seed: string): number[] {
   const a = [...arr];
+  const random = mulberry32(seedToUint32(seed));
   for (let i = a.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
+    const j = Math.floor(random() * (i + 1));
     [a[i], a[j]] = [a[j], a[i]];
   }
   return a;
 }
 
-const Home: Component = () => {
-  const [order, setOrder] = createSignal<number[]>([]);
-  const [index, setIndex] = createSignal(0);
-  const [mounted, setMounted] = createSignal(false);
+function makeSeed(): string {
+  if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
+    return crypto.randomUUID();
+  }
+  // Fallback for SSR environments without Web Crypto API
+  return Math.random().toString(36).slice(2) + Date.now().toString(36);
+}
 
-  onMount(() => {
-    setOrder(shuffle(poems.map((_, i) => i)));
-    setIndex(0);
-    setMounted(true);
-  });
+function getSeedFromDom(): string | undefined {
+  if (isServer) return undefined;
+  return document.querySelector<HTMLElement>("[data-poem-seed]")?.dataset.poemSeed;
+}
+
+const Home: Component = () => {
+  const initialSeed = isServer ? makeSeed() : getSeedFromDom() ?? makeSeed();
+  const [seed, setSeed] = createSignal(initialSeed);
+  const [order, setOrder] = createSignal(shuffleWithSeed(poems.map((_, i) => i), initialSeed));
+  const [index, setIndex] = createSignal(0);
 
   const poem = (): Poem => poems[order()[index()]];
 
   const advance = () => {
     const next = index() + 1;
     if (next >= poems.length) {
-      setOrder(shuffle(poems.map((_, i) => i)));
+      const nextSeed = makeSeed();
+      setSeed(nextSeed);
+      setOrder(shuffleWithSeed(poems.map((_, i) => i), nextSeed));
       setIndex(0);
-    } else {
-      setIndex(next);
+      return;
     }
+    setIndex(next);
   };
 
   return (
-    <div class="screen" onClick={advance}>
-      <Show when={mounted()}>
-        <div class="poem-container">
-          <p class="poem-body">{poem().body}</p>
-          <p class="poem-author">— {poem().author}</p>
-        </div>
-      </Show>
+    <div class="screen" data-poem-seed={seed()} onClick={advance}>
+      <div class="poem-container">
+        <p class="poem-body">{poem().body}</p>
+        <p class="poem-author">— {poem().author}</p>
+      </div>
     </div>
   );
 };
