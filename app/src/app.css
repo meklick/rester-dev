@@ -32,19 +32,55 @@ body {
   width: 100%;
 }
 
+@keyframes ink-fade {
+  from {
+    color: rgba(26, 26, 26, 0);
+    filter: blur(2px);
+  }
+  to {
+    color: rgba(26, 26, 26, 1);
+    filter: blur(0);
+  }
+}
+
+@keyframes ink-fade-author {
+  from {
+    color: rgba(136, 136, 136, 0);
+    filter: blur(2px);
+  }
+  to {
+    color: rgba(136, 136, 136, 1);
+    filter: blur(0);
+  }
+}
+
 .poem-body {
   font-size: clamp(1.2rem, 3.5vw, 1.6rem);
   line-height: 2.4;
   letter-spacing: 0.12em;
-  white-space: pre-line;
   text-align: center;
   margin-bottom: 2.5rem;
   font-weight: 400;
 }
 
+.poem-char {
+  display: inline-block;
+  color: rgba(26, 26, 26, 0);
+  filter: blur(2px);
+  animation-name: ink-fade;
+  animation-duration: 900ms;
+  animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+  animation-fill-mode: forwards;
+}
+
 .poem-author {
   font-size: 0.9rem;
-  color: #888888;
+  color: rgba(136, 136, 136, 0);
+  filter: blur(2px);
   text-align: right;
   letter-spacing: 0.08em;
+  animation-name: ink-fade-author;
+  animation-duration: 900ms;
+  animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+  animation-fill-mode: forwards;
 }

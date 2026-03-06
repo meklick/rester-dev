@@ -1,4 +1,4 @@
-import { createSignal } from "solid-js";
+import { createSignal, For, Show } from "solid-js";
 import type { Component } from "solid-js";
 import { isServer } from "solid-js/web";
 import poems from "~/data/poems.json";
@@ -69,10 +69,33 @@ const Home: Component = () => {
 
   return (
     <div class="screen" data-poem-seed={seed()} onClick={advance}>
-      <div class="poem-container">
-        <p class="poem-body">{poem().body}</p>
-        <p class="poem-author">— {poem().author}</p>
-      </div>
+      <Show keyed when={poem()}>
+        {(currentPoem) => {
+          const bodyChars = Array.from(currentPoem.body);
+          const authorDelay = Math.min(bodyChars.length * 100 + 200, 5000);
+
+          return (
+            <div class="poem-container">
+              <p class="poem-body">
+                <For each={bodyChars}>
+                  {(char, charIndex) => {
+                    if (char === "\n") return <br />;
+                    const delayMs = Math.min(charIndex() * 100, 4800);
+                    return (
+                      <span class="poem-char" style={{ "animation-delay": `${delayMs}ms` }}>
+                        {char}
+                      </span>
+                    );
+                  }}
+                </For>
+              </p>
+              <p class="poem-author" style={{ "animation-delay": `${authorDelay}ms` }}>
+                — {currentPoem.author}
+              </p>
+            </div>
+          );
+        }}
+      </Show>
     </div>
   );
 };
