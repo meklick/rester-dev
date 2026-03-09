@@ -37,8 +37,6 @@ body {
 @media (max-width: 480px) {
   .screen {
     padding: 2rem 1.25rem;
-    align-items: flex-start;
-    padding-top: max(3rem, 15vh);
   }
 
   .poem-body {
